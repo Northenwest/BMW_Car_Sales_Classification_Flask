@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-g">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMW Sales Prediction & CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .container { max-width: 1200px; }
+        .card-header-custom { background-color: #0066b1; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Dashboard Prediksi & Manajemen Data Mobil BMW</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header card-header-custom">
+                    <h5>🔮 Prediksi Klasifikasi Penjualan</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('predict') }}" method="POST">
+                        <div class="mb-2">
+                            <label class="form-label">Model</label>
+                            <select name="Model" class="form-select" required>
+                                <option value="3 Series">3 Series</option>
+                                <option value="5 Series">5 Series</option>
+                                <option value="7 Series">7 Series</option>
+                                <option value="i3">i3</option>
+                                <option value="i8">i8</option>
+                                <option value="M3">M3</option>
+                                <option value="M5">M5</option>
+                                <option value="X3">X3</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Tahun</label>
+                            <input type="number" class="form-control" name="Year" value="2020" required>
+                        </div>
+                         <div class="mb-2">
+                            <label class="form-label">Region</label>
+                            <select name="Region" class="form-select" required>
+                               <option value="Asia">Asia</option>
+                               <option value="Europe">Europe</option>
+                               <option value="North America">North America</option>
+                               <option value="South America">South America</option>
+                               <option value="Middle East">Middle East</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                             <label class="form-label">Tipe Bahan Bakar</label>
+                             <select name="Fuel_Type" class="form-select" required>
+                                <option value="Petrol">Petrol</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Hybrid">Hybrid</option>
+                                <option value="Electric">Electric</option>
+                             </select>
+                        </div>
+                        <div class="mb-2">
+                             <label class="form-label">Transmisi</label>
+                             <select name="Transmission" class="form-select" required>
+                                <option value="Manual">Manual</option>
+                                <option value="Automatic">Automatic</option>
+                             </select>
+                        </div>
+                        <input type="hidden" name="Color" value="Red"> <div class="mb-2">
+                            <label class="form-label">Ukuran Mesin (L)</label>
+                            <input type="number" step="0.1" class="form-control" name="Engine_Size_L" value="2.0" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Jarak Tempuh (KM)</label>
+                            <input type="number" class="form-control" name="Mileage_KM" value="100000" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Harga (USD)</label>
+                            <input type="number" class="form-control" name="Price_USD" value="50000" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Volume Penjualan</label>
+                            <input type="number" class="form-control" name="Sales_Volume" value="5000" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-2">Prediksi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header card-header-custom d-flex justify-content-between align-items-center">
+                    <h5>📄 Data Mobil di Database</h5>
+                    <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addCarModal">➕ Tambah Data</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Model</th>
+                                    <th>Tahun</th>
+                                    <th>Harga (USD)</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for car in cars %}
+                                <tr>
+                                    <td>{{ car.id }}</td>
+                                    <td>{{ car.Model }}</td>
+                                    <td>{{ car.Year }}</td>
+                                    <td>{{ "{:,.0f}".format(car.Price_USD) }}</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm edit-btn"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editCarModal"
+                                                data-id="{{ car.id }}"
+                                                data-model="{{ car.Model }}"
+                                                data-year="{{ car.Year }}"
+                                                data-region="{{ car.Region }}"
+                                                data-color="{{ car.Color }}"
+                                                data-fuel_type="{{ car.Fuel_Type }}"
+                                                data-transmission="{{ car.Transmission }}"
+                                                data-engine_size_l="{{ car.Engine_Size_L }}"
+                                                data-mileage_km="{{ car.Mileage_KM }}"
+                                                data-price_usd="{{ car.Price_USD }}"
+                                                data-sales_volume="{{ car.Sales_Volume }}">
+                                            Edit
+                                        </button>
+                                        <a href="/delete/{{ car.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menghapus data ini?')">Hapus</a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">Belum ada data.</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addCarModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tambah Data Mobil Baru</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{{ url_for('add_car') }}" method="POST">
+          <input type="text" name="Model" class="form-control mb-2" placeholder="Model" required>
+          <input type="number" name="Year" class="form-control mb-2" placeholder="Tahun" required>
+          <input type="text" name="Region" class="form-control mb-2" placeholder="Region" required>
+          <input type="text" name="Color" class="form-control mb-2" placeholder="Warna" required>
+          <input type="text" name="Fuel_Type" class="form-control mb-2" placeholder="Tipe Bahan Bakar" required>
+          <input type="text" name="Transmission" class="form-control mb-2" placeholder="Transmisi" required>
+          <input type="number" step="0.1" name="Engine_Size_L" class="form-control mb-2" placeholder="Ukuran Mesin (L)" required>
+          <input type="number" name="Mileage_KM" class="form-control mb-2" placeholder="Jarak Tempuh (KM)" required>
+          <input type="number" name="Price_USD" class="form-control mb-2" placeholder="Harga (USD)" required>
+          <input type="number" name="Sales_Volume" class="form-control mb-2" placeholder="Volume Penjualan" required>
+          <button type="submit" class="btn btn-primary w-100">Simpan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editCarModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Data Mobil</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editForm" method="POST">
+            <div class="mb-2"><input type="text" name="Model" id="editModel" class="form-control" required></div>
+            <div class="mb-2"><input type="number" name="Year" id="editYear" class="form-control" required></div>
+            <div class="mb-2"><input type="text" name="Region" id="editRegion" class="form-control" required></div>
+            <div class="mb-2"><input type="text" name="Color" id="editColor" class="form-control" required></div>
+            <div class="mb-2"><input type="text" name="Fuel_Type" id="editFuelType" class="form-control" required></div>
+            <div class="mb-2"><input type="text" name="Transmission" id="editTransmission" class="form-control" required></div>
+            <div class="mb-2"><input type="number" step="0.1" name="Engine_Size_L" id="editEngineSize" class="form-control" required></div>
+            <div class="mb-2"><input type="number" name="Mileage_KM" id="editMileage" class="form-control" required></div>
+            <div class="mb-2"><input type="number" name="Price_USD" id="editPrice" class="form-control" required></div>
+            <div class="mb-2"><input type="number" name="Sales_Volume" id="editSalesVolume" class="form-control" required></div>
+            <button type="submit" class="btn btn-warning w-100">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.edit-btn').on('click', function() {
+        // Get data from button attributes
+        var id = $(this).data('id');
+        $('#editForm').attr('action', '/edit/' + id);
+
+        // Populate modal fields
+        $('#editModel').val($(this).data('model'));
+        $('#editYear').val($(this).data('year'));
+        $('#editRegion').val($(this).data('region'));
+        $('#editColor').val($(this).data('color'));
+        $('#editFuelType').val($(this).data('fuel_type'));
+        $('#editTransmission').val($(this).data('transmission'));
+        $('#editEngineSize').val($(this).data('engine_size_l'));
+        $('#editMileage').val($(this).data('mileage_km'));
+        $('#editPrice').val($(this).data('price_usd'));
+        $('#editSalesVolume').val($(this).data('sales_volume'));
+    });
+});
+</script>
+
+</body>
+</html>

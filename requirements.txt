@@ -1,0 +1,8 @@
+pandas
+numpy
+pycaret
+streamlit
+Flask
+scikit-learn
+joblib
+Flask-MySQLdb
