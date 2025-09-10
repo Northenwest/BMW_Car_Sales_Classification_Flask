@@ -130,4 +130,4 @@ def delete_car(id):
 
 # Menjalankan aplikasi
 if __name__ == '__main__':
-    app.run(host=82.197.71.171, port=2020, debug=True)
+    app.run(host="82.197.71.171", port=2020, debug=True)
